@@ -1,11 +1,11 @@
-name: 'Create Infra with Terraform'
+name: 'Create Infra Terraform'
 
 on:
   push:
     branches: [ main ]
-    paths: .github/workflows/terraform-devops.yml
+    paths: .github/workflows/blank.yml
   pull_request:
-    branches:  none # [ main ]
+    branches:  main # [ main ]
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
   
