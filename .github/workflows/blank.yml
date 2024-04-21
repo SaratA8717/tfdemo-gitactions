@@ -15,7 +15,7 @@ env:
   CONTAINER_NAME: tfstate
   BLOB_NAME: terraform.tfstate
   
-  WORKING_DIRECTORY: tfdemo-gitactions
+  WORKING_DIRECTORY: RG-Deployment
   
 jobs:
   scan-terraform-config:
@@ -67,11 +67,14 @@ jobs:
     - name: Verify Azure CLI installation
       run: az --version
                 
-    - name: Login to Azure with Service Principal
-      uses: Azure/login@v1.4.3
-      with:
-        # Paste output of `az ad sp create-for-rbac` as value of secret variable: AZURE_CREDENTIALS
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - name: Login to Azure
+      env:
+        ARM_CLIENT_ID: $ARM_CLIENT_ID
+        ARM_CLIENT_SECRET: $ARM_CLIENT_SECRET
+        ARM_TENANT_ID: $ARM_TENANT_ID
+        ARM_SUBSCRIPTION_ID: $ARM_SUBSCRIPTION_ID
+      run: |
+        az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID
 
     - name: Create Terraform backend state storage
       uses: Azure/cli@v1.0.6
@@ -117,10 +120,10 @@ jobs:
     - name: Terraform Init
       id: init
       env:
-        ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-        ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-        ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        ARM_CLIENT_ID: $ARM_CLIENT_ID
+        ARM_CLIENT_SECRET: $ARM_CLIENT_SECRET
+        ARM_TENANT_ID: $ARM_TENANT_ID
+        ARM_SUBSCRIPTION_ID: $ARM_SUBSCRIPTION_ID
       run: |
         # Initialize a new or existing Terraform working directory by creating initial files, 
         # loading any remote state, downloading modules, etc.
@@ -140,10 +143,10 @@ jobs:
     - name: Terraform Plan
       id: plan
       env:
-        ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-        ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-        ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        ARM_CLIENT_ID: $ARM_CLIENT_ID
+        ARM_CLIENT_SECRET: $ARM_CLIENT_SECRET
+        ARM_TENANT_ID: $ARM_TENANT_ID
+        ARM_SUBSCRIPTION_ID: $ARM_SUBSCRIPTION_ID
       if: github.event_name == 'pull_request' # 'push' # 
       run: |
         terraform plan -no-color 
@@ -192,8 +195,8 @@ jobs:
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       env:
-        ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-        ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-        ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_CLIENT_ID: $ARM_CLIENT_ID
+          ARM_CLIENT_SECRET: $ARM_CLIENT_SECRET
+          ARM_TENANT_ID: $ARM_TENANT_ID
+          ARM_SUBSCRIPTION_ID: $ARM_SUBSCRIPTION_ID
       run: terraform apply -auto-approve
