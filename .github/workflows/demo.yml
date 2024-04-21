@@ -25,5 +25,4 @@ jobs:
       - name: Sample Azure action
         env: # Or as an environment variable
           credentials: ${{ secrets.AZURE_CREDENTIALS }}
-      - name: Print Azure Creds
-        run: echo  ${{ secrets.AZURE_CREDENTIALS }}
+          run: echo  ${{ secrets.AZURE_CREDENTIALS }}
